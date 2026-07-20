@@ -1,0 +1,13 @@
+# 私有材料（永不入库）
+prep/
+resume-v*.md
+resume-v*.html
+
+# 素材源文件（不入库，网页用压缩后的 assets/）
+Camera_*.jpg
+Gemini_*.png
+videos/
+
+# 临时文件
+_review.html
+__pycache__/

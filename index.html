@@ -1,0 +1,633 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>XLeRobot 家庭服务机器人 — 徐佳宇 · 机器人系统 / ROS 2 · 具身智能应用工程师</title>
+<meta name="description" content="XLeRobot 家庭服务机器人：从实验原型，到面向交付的工程化机器人系统。ROS 2 / 具身智能 / 标定体系 / 混合抓取 / ACT 数据闭环。">
+<style>
+:root{
+  --bg:#f6f8fa; --bg2:#eef2f6; --card:#ffffff; --card2:#f1f5f9;
+  --border:#dde4ec; --border-hi:#b4c3d4;
+  --text:#182430; --muted:#51606f; --dim:#7d8b9a;
+  --teal:#0d9488; --blue:#0284c7; --amber:#b45309; --red:#dc2626;
+  --mono:"SF Mono","Cascadia Code","JetBrains Mono",Consolas,monospace;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);line-height:1.7;
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
+  -webkit-font-smoothing:antialiased}
+a{color:var(--blue);text-decoration:none}
+a:hover{text-decoration:underline}
+code,.mono{font-family:var(--mono);font-size:.9em}
+.wrap{max-width:1120px;margin:0 auto;padding:0 24px}
+section{padding:72px 0 24px}
+h2{font-size:1.7rem;font-weight:700;letter-spacing:.02em;margin-bottom:8px;display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+h2 .idx{font-family:var(--mono);font-size:.85rem;color:var(--teal);border:1px solid var(--border);
+  border-radius:6px;padding:2px 8px;background:var(--card)}
+h2 .core{font-size:.72rem;color:var(--amber);font-family:var(--mono);border:1px solid rgba(180,83,9,.4);
+  background:rgba(180,83,9,.07);border-radius:6px;padding:3px 10px}
+.sub{color:var(--muted);margin-bottom:26px;max-width:820px}
+.lead{font-size:1.06rem;color:var(--text);max-width:880px;margin-bottom:30px}
+.lead b{color:var(--teal)}
+h3{font-size:1.05rem;margin-bottom:10px}
+.small{font-size:.85rem;color:var(--muted)}
+.tag{display:inline-block;font-family:var(--mono);font-size:.72rem;color:var(--teal);
+  border:1px solid var(--border);border-radius:4px;padding:1px 7px;margin:2px 3px 2px 0;background:var(--card);white-space:nowrap}
+.tag.amber{color:var(--amber)} .tag.blue{color:var(--blue)}
+.card{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:22px 24px;
+  box-shadow:0 1px 3px rgba(16,24,40,.05);
+  transition:border-color .2s,box-shadow .2s}
+.card:hover{border-color:var(--border-hi);box-shadow:0 4px 14px rgba(16,24,40,.08)}
+.reveal{opacity:0;transform:translateY(18px);transition:opacity .6s ease,transform .6s ease}
+.reveal.on{opacity:1;transform:none}
+
+/* ---- nav ---- */
+nav{position:fixed;top:0;left:0;right:0;z-index:50;background:rgba(246,248,250,.85);
+  backdrop-filter:blur(12px);border-bottom:1px solid var(--border)}
+nav .wrap{display:flex;align-items:center;gap:26px;height:54px;overflow-x:auto;scrollbar-width:none}
+nav .wrap::-webkit-scrollbar{display:none}
+nav .brand{font-family:var(--mono);font-weight:700;color:var(--text);white-space:nowrap;margin-right:auto}
+nav .brand span{color:var(--teal)}
+nav a.nl{color:var(--muted);font-size:.86rem;white-space:nowrap}
+nav a.nl:hover{color:var(--text);text-decoration:none}
+
+/* ---- hero ---- */
+header.hero{padding:140px 0 60px;background:
+  radial-gradient(900px 400px at 75% -10%,rgba(13,148,136,.10),transparent 60%),
+  radial-gradient(700px 380px at 10% 0%,rgba(2,132,199,.08),transparent 60%),var(--bg)}
+.hero-grid{display:grid;grid-template-columns:1.08fr .92fr;gap:44px;align-items:start}
+@media(max-width:900px){.hero-grid{grid-template-columns:1fr}}
+.hero .kicker{font-family:var(--mono);color:var(--teal);font-size:.85rem;letter-spacing:.15em;margin-bottom:14px}
+.hero h1{font-size:2.45rem;line-height:1.28;font-weight:800;letter-spacing:.01em}
+.hero h1 em{font-style:normal;color:var(--teal)}
+.hero .idline{margin:14px 0 6px;font-size:.95rem;color:var(--dim)}
+.hero .idline b{color:var(--text);font-weight:600}
+.hero .roles{margin:6px 0 16px;font-size:1.05rem;color:var(--muted)}
+.hero .roles b{color:var(--text);font-weight:600}
+.hero p.desc{max-width:640px;color:var(--muted);font-size:.95rem}
+.cta{margin-top:26px;display:flex;gap:14px;flex-wrap:wrap}
+.btn{display:inline-block;padding:11px 22px;border-radius:9px;font-weight:600;font-size:.95rem;border:1px solid var(--border)}
+.btn.pri{background:#14b8a6;border-color:#14b8a6;color:#ffffff}
+.btn.pri:hover{text-decoration:none;filter:brightness(1.06)}
+.btn.ghost{color:var(--text);background:var(--card)}
+.btn.ghost:hover{text-decoration:none;border-color:var(--border-hi)}
+.hero-photo{border-radius:16px;overflow:hidden;border:1px solid var(--border);box-shadow:0 8px 30px rgba(16,24,40,.12);background:var(--card)}
+.hero-photo img{display:block;width:100%;height:590px;object-fit:cover;object-position:50% 40%}
+@media(max-width:900px){.hero-photo img{height:430px}}
+.hero-photo .cap{padding:9px 14px;font-size:.76rem;color:var(--dim);border-top:1px solid var(--border)}
+.metrics{display:grid;grid-template-columns:repeat(auto-fit,minmax(158px,1fr));gap:14px;margin-top:46px}
+.metric{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px 18px;
+  box-shadow:0 1px 3px rgba(16,24,40,.05)}
+.metric .num{font-family:var(--mono);font-size:1.45rem;font-weight:700;color:var(--teal)}
+.metric .lbl{font-size:.8rem;color:var(--muted);margin-top:2px}
+
+/* ---- video card ---- */
+.vcard{display:block;color:inherit}
+.vcard:hover{text-decoration:none}
+.vthumb{position:relative;border-radius:12px;overflow:hidden;border:1px solid var(--border);aspect-ratio:16/9;background:var(--bg2)}
+.vthumb img{width:100%;height:100%;object-fit:cover;display:block;transition:transform .35s}
+.vcard:hover .vthumb img{transform:scale(1.03)}
+.vplay{position:absolute;inset:0;display:flex;align-items:center;justify-content:center}
+.vplay span{width:58px;height:58px;border-radius:50%;background:rgba(24,36,48,.55);color:#fff;
+  display:flex;align-items:center;justify-content:center;font-size:1.15rem;backdrop-filter:blur(2px);transition:background .2s}
+.vcard:hover .vplay span{background:rgba(13,148,136,.8)}
+.vbili{position:absolute;right:10px;top:10px;font-family:var(--mono);font-size:.68rem;color:#fff;
+  background:rgba(24,36,48,.55);padding:2px 8px;border-radius:5px}
+.vcap{margin-top:10px}
+.vcap b{display:block;font-size:.95rem}
+.vcap span{font-size:.82rem;color:var(--muted)}
+.hero-video{margin-top:40px;max-width:800px}
+
+/* ---- pillar head & judge ---- */
+.pillar{display:inline-block;font-family:var(--mono);font-size:.74rem;color:var(--amber);letter-spacing:.12em;
+  border:1px solid rgba(180,83,9,.4);background:rgba(180,83,9,.07);border-radius:6px;padding:2px 10px;margin-bottom:12px}
+.pillar.ov{color:var(--teal);border-color:rgba(13,148,136,.4);background:rgba(13,148,136,.07)}
+.judge{margin-top:18px;border-left:3px solid var(--amber);background:rgba(180,83,9,.05);
+  border-radius:0 10px 10px 0;padding:14px 20px;font-size:.87rem;color:var(--muted)}
+.judge b{color:var(--amber)}
+.judge ul{margin:6px 0 0 18px}
+.judge li{margin-bottom:4px}
+
+/* ---- generic grid cards ---- */
+.grid4{display:grid;grid-template-columns:repeat(auto-fit,minmax(255px,1fr));gap:16px}
+.gcard{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:20px 22px;
+  box-shadow:0 1px 3px rgba(16,24,40,.05);display:flex;flex-direction:column}
+.gcard h4{font-size:.97rem;display:flex;align-items:center;gap:8px;margin-bottom:6px}
+.gcard h4 .dot{width:8px;height:8px;border-radius:50%;background:var(--teal);flex:none}
+.gcard h4 .dot.b{background:var(--blue)} .gcard h4 .dot.a{background:var(--amber)}
+.gcard p,.gcard li{font-size:.83rem;color:var(--muted);line-height:1.6}
+.gcard ul{margin:4px 0 0 17px}
+.gcard li{margin-bottom:4px}
+.gcard .foot{margin-top:auto;padding-top:10px;border-top:1px dashed var(--border);font-family:var(--mono);font-size:.72rem;color:var(--teal)}
+
+/* ---- architecture diagram ---- */
+.guard{margin-top:16px;border:1px solid rgba(180,83,9,.35);background:rgba(180,83,9,.06);
+  border-radius:10px;padding:14px 18px;font-size:.88rem}
+.guard b{color:var(--amber)}
+.arch-svg{width:100%;height:auto;display:block;background:var(--card);border:1px solid var(--border);
+  border-radius:14px;box-shadow:0 1px 3px rgba(16,24,40,.05);padding:8px}
+
+/* ---- pipeline ---- */
+.pipe{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:14px;counter-reset:st}
+.stage{position:relative;background:var(--card);border:1px solid var(--border);border-radius:11px;padding:18px 18px 16px;
+  box-shadow:0 1px 3px rgba(16,24,40,.05)}
+.stage::before{counter-increment:st;content:counter(st,decimal-leading-zero);
+  font-family:var(--mono);font-size:.75rem;color:var(--teal);letter-spacing:.1em}
+.stage h4{font-size:.92rem;margin:6px 0 5px}
+.stage p{font-size:.8rem;color:var(--muted);line-height:1.55}
+.stage .io{margin-top:8px;font-family:var(--mono);font-size:.7rem;color:var(--dim)}
+
+/* ---- sub block head ---- */
+.subblk{margin-top:44px}
+.subblk>h3{font-size:1.15rem;display:flex;align-items:center;gap:10px;margin-bottom:6px}
+.subblk>h3 .n{font-family:var(--mono);font-size:.78rem;color:var(--teal)}
+.band{margin-top:18px;background:var(--bg2);border:1px solid var(--border);border-radius:12px;padding:18px 24px;font-size:.88rem;color:var(--muted)}
+.band b{color:var(--text)}
+
+/* ---- split ---- */
+.split{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:8px}
+@media(max-width:820px){.split{grid-template-columns:1fr}}
+.split .half{border-radius:12px;padding:22px 24px;border:1px solid var(--border)}
+.split .trad{background:rgba(2,132,199,.05);border-top:3px solid var(--blue)}
+.split .learn{background:rgba(180,83,9,.05);border-top:3px solid var(--amber)}
+.split h4{font-size:1rem;margin-bottom:6px}
+.split .why{font-size:.8rem;color:var(--dim);margin-bottom:4px}
+.split ul{margin:10px 0 0 18px;font-size:.86rem;color:var(--muted)}
+.split li{margin-bottom:5px}
+.story{margin-top:22px;border-left:3px solid var(--teal);background:var(--bg2);
+  border-radius:0 10px 10px 0;padding:16px 22px;font-size:.9rem;color:var(--muted)}
+.story b{color:var(--text)}
+.params{display:flex;flex-wrap:wrap;gap:8px;margin-top:18px}
+.grid3{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px}
+@media(max-width:900px){.grid3{grid-template-columns:1fr}}
+.vidrow{display:grid;grid-template-columns:minmax(0,560px) 1fr;gap:22px;align-items:stretch;margin-top:22px}
+.vidrow .story{margin-top:0}
+@media(max-width:900px){.vidrow{grid-template-columns:1fr}}
+
+/* ---- delivery ---- */
+.deliv{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px}
+.deliv .card b.t{display:block;font-size:.95rem;margin-bottom:6px;color:var(--text)}
+.deliv .card p{font-size:.82rem;color:var(--muted)}
+.deliv .card code{color:var(--teal);font-size:.76rem}
+
+/* ---- timeline ---- */
+.timeline{position:relative;margin-left:10px;padding-left:30px;border-left:2px solid var(--border)}
+.tl-item{position:relative;padding-bottom:34px}
+.tl-item:last-child{padding-bottom:0}
+.tl-item::before{content:"";position:absolute;left:-38px;top:6px;width:14px;height:14px;
+  border-radius:50%;background:var(--card);border:3px solid var(--teal)}
+.tl-item:nth-child(2)::before{border-color:var(--blue)}
+.tl-item:nth-child(3)::before{border-color:var(--amber)}
+.tl-item:nth-child(4)::before{border-color:var(--teal)}
+.tl-item:nth-child(5)::before{border-color:var(--blue)}
+.tl-item .when{font-family:var(--mono);font-size:.75rem;color:var(--dim)}
+.tl-item h4{font-size:1.02rem;margin:4px 0}
+.tl-item h4 .mono{font-size:.75rem;color:var(--dim);font-weight:400}
+.tl-item p{font-size:.86rem;color:var(--muted);max-width:760px}
+
+/* ---- method / contact ---- */
+.method{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:16px}
+.method .card p{font-size:.82rem;color:var(--muted)}
+.contact-box{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:34px;text-align:center;
+  box-shadow:0 1px 3px rgba(16,24,40,.05)}
+.contact-box p{color:var(--muted)}
+.contact-box .links{display:flex;gap:14px;justify-content:center;flex-wrap:wrap;margin-top:18px}
+footer{border-top:1px solid var(--border);margin-top:80px;padding:28px 0 40px;color:var(--dim);font-size:.8rem}
+</style>
+</head>
+<body>
+
+<nav><div class="wrap">
+  <div class="brand">xlerobot<span>@</span>showcase</div>
+  <a class="nl" href="#arch">系统架构</a>
+  <a class="nl" href="#grasp">抓取体系</a>
+  <a class="nl" href="#mobility">移动基础</a>
+  <a class="nl" href="#system">系统集成</a>
+  <a class="nl" href="#evolution">演进</a>
+  <a class="nl" href="#contact">联系</a>
+</div></nav>
+
+<header class="hero"><div class="wrap">
+  <div class="hero-grid">
+    <div>
+      <div class="kicker">PROJECT SHOWCASE · ROS 2 JAZZY · EMBODIED AI</div>
+      <h1>XLeRobot 家庭服务机器人<br><em>从实验原型，<br>到面向交付的工程化系统</em></h1>
+      <div class="idline"><b>徐佳宇</b> · 机械工程本硕（西安交通大学）· 2026 机器人全栈实践 · 6 年电信级软件工程经验（5G 核心网 / 基站）</div>
+      <div class="roles">目标岗位：<b>机器人系统 / ROS 2 应用工程师</b> · <b>具身智能应用工程师</b></div>
+      <p class="desc">语音召唤 → 自主导航 → 视觉定位 → 学习策略抓取 → 寻人递送。
+        我主导需求分解、架构设计、标定与数据闭环、真机调试与交付工程化的全过程，实现正在沉淀为开源教学项目。
+        本页展示全部技术细节与成果，源码随教学版开源前暂不公开。</p>
+      <div class="cta">
+        <a class="btn pri" href="#arch">查看系统架构</a>
+        <a class="btn ghost" href="#contact">联系我</a>
+      </div>
+    </div>
+    <div class="hero-photo">
+      <img src="assets/robot-hero-ai.jpg" alt="XLeRobot 整机渲染图：双臂 + 头部相机 + 移动底盘">
+      <div class="cap">家庭场景中的 XLeRobot 整机渲染（AI 生成）· 双臂 SO101 / 头部 D455 / 移动底盘</div>
+    </div>
+  </div>
+  <div class="metrics">
+    <div class="metric"><div class="num">≤1cm</div><div class="lbl">末端定位精度（切平面 1.1–5.8mm）</div></div>
+    <div class="metric"><div class="num">4 层</div><div class="lbl">标定体系：零位→手眼→补偿→闭环</div></div>
+    <div class="metric"><div class="num">39</div><div class="lbl">个类型化接口契约，全部在用</div></div>
+    <div class="metric"><div class="num">8 阶段</div><div class="lbl">主链路状态机编排</div></div>
+  </div>
+  <div class="hero-video">
+    <a class="vcard" href="https://www.bilibili.com/video/BV1srNg6XEZj" target="_blank" rel="noopener">
+      <div class="vthumb"><img src="assets/video-1.jpg" alt="整体 demo 实拍封面"><div class="vplay"><span>▶</span></div><span class="vbili">B 站 · BV1srNg6XEZj</span></div>
+      <div class="vcap"><b>整体 demo 实拍（信任锚点）</b><span>语音召唤 → 自主导航 → 视觉定位抓取 → 寻人 → 递送，全链路一镜到底</span></div>
+    </a>
+  </div>
+</div></header>
+
+<!-- ============ 总览：系统架构 ============ -->
+<section id="arch"><div class="wrap reveal">
+  <div class="pillar ov">SYSTEM OVERVIEW · 总览</div>
+  <h2><span class="idx">01</span>系统架构：智能在 GPU，控制权在本体</h2>
+  <p class="lead">VLA / VLM 等重模型跑在局域网 GPU 服务器，本体只做控制与执行——<b>分层为了算力，红线为了安全</b>：
+    智能与实时控制解耦，所有运动指令由 Robot 本地仲裁与执行，这是全页所有设计的第一原则。</p>
+  <svg class="arch-svg" viewBox="0 0 1120 505" role="img" aria-label="系统架构图：Robot 端与 LAN GPU 主机分工与数据流">
+    <!-- 安全边界 -->
+    <line x1="560" y1="24" x2="560" y2="462" stroke="#b45309" stroke-width="1.5" stroke-dasharray="5 5" opacity=".5"/>
+    <rect x="521" y="466" width="78" height="20" rx="6" fill="#ffffff" stroke="#b45309"/>
+    <text x="560" y="480" text-anchor="middle" font-size="10" fill="#b45309">安全边界</text>
+
+    <!-- ROBOT 端 -->
+    <rect x="16" y="16" width="470" height="470" rx="14" fill="rgba(13,148,136,.03)" stroke="#0d9488" stroke-width="2"/>
+    <text x="40" y="52" font-size="16" font-weight="700" fill="#0d9488" font-family="monospace">ROBOT 端</text>
+    <text x="40" y="74" font-size="10.5" fill="#7d8b9a">Ubuntu 24.04 · ROS 2 Jazzy · 全系统唯一轨迹 publisher</text>
+
+    <rect x="40" y="94" width="206" height="38" rx="7" fill="#f1f5f9" stroke="#dde4ec"/>
+    <text x="143" y="118" text-anchor="middle" font-size="11.5" fill="#182430">D455 双相机 · 语音入口</text>
+    <rect x="262" y="94" width="206" height="38" rx="7" fill="#f1f5f9" stroke="#dde4ec"/>
+    <text x="365" y="118" text-anchor="middle" font-size="11.5" fill="#182430">HMI :8080 · YOLO 寻人</text>
+    <rect x="40" y="146" width="206" height="38" rx="7" fill="#f1f5f9" stroke="#dde4ec"/>
+    <text x="143" y="170" text-anchor="middle" font-size="11.5" fill="#182430">Nav2 三阶段 + 精确 dock</text>
+    <rect x="262" y="146" width="206" height="38" rx="7" fill="#f1f5f9" stroke="#dde4ec"/>
+    <text x="365" y="170" text-anchor="middle" font-size="11.5" fill="#182430">MoveIt pregrasp</text>
+
+    <rect x="40" y="200" width="428" height="46" rx="8" fill="rgba(13,148,136,.09)" stroke="#0d9488" stroke-width="1.5"/>
+    <text x="254" y="220" text-anchor="middle" font-size="12" font-weight="700" fill="#0d9488">Streaming Executor · 看门狗 0.5s</text>
+    <text x="254" y="237" text-anchor="middle" font-size="10" fill="#51606f">唯一运动指令出口 · joint-state 陈旧即断</text>
+
+    <rect x="40" y="262" width="428" height="38" rx="7" fill="#f1f5f9" stroke="#dde4ec"/>
+    <text x="254" y="286" text-anchor="middle" font-size="11.5" fill="#182430">ros2_control 单一硬件运行时 · 双总线统一所有权</text>
+    <rect x="40" y="314" width="428" height="38" rx="7" fill="#f1f5f9" stroke="#dde4ec"/>
+    <text x="254" y="338" text-anchor="middle" font-size="11.5" fill="#182430">四 profile 硬互斥（systemd + flock）</text>
+    <rect x="40" y="392" width="428" height="44" rx="8" fill="#182430"/>
+    <text x="254" y="419" text-anchor="middle" font-size="12" fill="#ffffff">物理硬件：底盘 · 双臂总线舵机</text>
+
+    <g stroke="#0d9488" stroke-width="1.6">
+      <line x1="254" y1="246" x2="254" y2="258"/><path d="M250 258 L254 264 L258 258 Z" fill="#0d9488" stroke="none"/>
+      <line x1="254" y1="300" x2="254" y2="310"/><path d="M250 310 L254 316 L258 310 Z" fill="#0d9488" stroke="none"/>
+      <line x1="254" y1="352" x2="254" y2="386"/><path d="M250 386 L254 392 L258 386 Z" fill="#0d9488" stroke="none"/>
+    </g>
+
+    <!-- LAN GPU 主机 -->
+    <rect x="634" y="16" width="470" height="470" rx="14" fill="rgba(180,83,9,.03)" stroke="#b45309" stroke-width="2"/>
+    <text x="658" y="52" font-size="16" font-weight="700" fill="#b45309" font-family="monospace">LAN GPU 主机</text>
+    <text x="658" y="74" font-size="10.5" fill="#7d8b9a">只返回语义与动作 · 无任何 ROS 发布能力</text>
+
+    <rect x="658" y="94" width="422" height="44" rx="7" fill="rgba(180,83,9,.06)" stroke="#dde4ec"/>
+    <text x="672" y="113" font-size="12" font-weight="700" fill="#182430">Qwen · :1234</text>
+    <text x="672" y="130" font-size="10" fill="#51606f">语音意图 + VLM bbox（LM Studio 托管，仓外服务）</text>
+    <rect x="658" y="152" width="422" height="44" rx="7" fill="rgba(180,83,9,.06)" stroke="#dde4ec"/>
+    <text x="672" y="171" font-size="12" font-weight="700" fill="#182430">ACT Inference Server · :8766</text>
+    <text x="672" y="188" font-size="10" fill="#51606f">bearer token 鉴权 · predict_action_chunk</text>
+    <rect x="658" y="210" width="422" height="38" rx="7" fill="rgba(180,83,9,.06)" stroke="#dde4ec"/>
+    <text x="672" y="233" font-size="11.5" fill="#182430">GPD / PointNetGPD 抓取网络后端</text>
+    <rect x="658" y="262" width="422" height="56" rx="7" fill="rgba(180,83,9,.06)" stroke="#dde4ec"/>
+    <text x="672" y="284" font-size="11.5" fill="#182430">episode 重校验 · LeRobot 格式转换</text>
+    <text x="672" y="302" font-size="11.5" fill="#182430">ACT 训练 / 恢复 / 评估 / 导出版本化</text>
+
+    <!-- 数据流：A 检测/意图 -->
+    <text x="560" y="94" text-anchor="middle" font-size="9.5" fill="#51606f">图像+语音文本</text>
+    <line x1="492" y1="104" x2="622" y2="104" stroke="#0d9488" stroke-width="1.8"/>
+    <path d="M622 99 L632 104 L622 109 Z" fill="#0d9488"/>
+    <text x="560" y="122" text-anchor="middle" font-size="9" fill="#7d8b9a" font-family="monospace">HTTP :1234</text>
+    <line x1="628" y1="136" x2="498" y2="136" stroke="#b45309" stroke-width="1.8"/>
+    <path d="M498 131 L488 136 L498 141 Z" fill="#b45309"/>
+    <text x="560" y="152" text-anchor="middle" font-size="9.5" fill="#51606f">bbox / 结构化意图</text>
+
+    <!-- 数据流：B 策略推理 -->
+    <text x="560" y="176" text-anchor="middle" font-size="9.5" fill="#51606f">关节状态+双路图像</text>
+    <line x1="492" y1="186" x2="622" y2="186" stroke="#0d9488" stroke-width="1.8"/>
+    <path d="M622 181 L632 186 L622 191 Z" fill="#0d9488"/>
+    <text x="560" y="204" text-anchor="middle" font-size="9" fill="#7d8b9a" font-family="monospace">HTTP :8766</text>
+    <line x1="628" y1="218" x2="498" y2="218" stroke="#b45309" stroke-width="1.8"/>
+    <path d="M498 213 L488 218 L498 223 Z" fill="#b45309"/>
+    <text x="560" y="234" text-anchor="middle" font-size="9.5" fill="#b45309" font-weight="700">action chunk</text>
+
+    <!-- 数据流：C 数据回传 -->
+    <text x="560" y="284" text-anchor="middle" font-size="9.5" fill="#51606f">原始 episode</text>
+    <line x1="492" y1="294" x2="622" y2="294" stroke="#0d9488" stroke-width="1.8"/>
+    <path d="M622 289 L632 294 L622 299 Z" fill="#0d9488"/>
+    <text x="560" y="312" text-anchor="middle" font-size="9" fill="#7d8b9a" font-family="monospace">rsync :22 断点续传</text>
+  </svg>
+  <div class="guard"><b>安全边界：</b>GPU 侧代码无任何 ROS 发布能力（仓库级保证）；ACT action chunk 必经 Robot 本地
+    Streaming Executor——输入看门狗 0.5s、joint-state 陈旧即断、controller 模式周期校验；ACT 仅在 MoveIt pregrasp
+    实测到位后，从实测关节上下文启动。</div>
+</div></section>
+
+<!-- ============ 支柱一：抓得住（核心） ============ -->
+<section id="grasp"><div class="wrap reveal">
+  <div class="pillar">PILLAR 01 · 抓得住</div>
+  <h2><span class="idx">02</span>抓取体系：标定 · 传统 · 学习 <span class="core">核心工作</span></h2>
+  <p class="lead">围绕「抓得住、抓得稳」的完整技术栈：<b>毫米级标定打底</b>，确定性归传统方法，
+    接触丰富的最后一段交给 ACT——三层各做自己擅长的事。</p>
+
+  <!-- 2.1 标定体系 -->
+  <div class="subblk">
+    <h3><span class="n">2.1</span>标定体系：视觉引导抓取的精度地基</h3>
+    <p class="sub">四层标定 + 一套误差分解验证法，把末端切平面精度从开环 8.6mm 压到补偿后 1.1–5.8mm、闭环 2–6mm。</p>
+    <div class="grid4">
+      <div class="gcard">
+        <h4><span class="dot"></span>① 关节零位标定</h4>
+        <p>FK 与安全的基线：按组释放扭矩手摆 URDF 零位记录 offset，逐关节走行程记录 raw_min/max，
+          行程转 MoveIt 软限位。人眼对零约 1° 级——够用，且被上层外部真值反查兜底。</p>
+        <div class="foot">产物：config/*_calibration.yaml → xacro offset / 行程限位</div>
+      </div>
+      <div class="gcard">
+        <h4><span class="dot b"></span>② 头相机手眼（眼在手上 AX=XB）</h4>
+        <p>16-tag 固定板 + 头 pan/tilt 多姿态，全板角点 bundle PnP，重投影 &gt;1px 拒帧，双向逼近吸收回差。</p>
+        <div class="foot">平移 RMSE 1.26mm · 旋转 0.16° · 三轮重复 std ≤1mm → 写入 URDF</div>
+      </div>
+      <div class="gcard">
+        <h4><span class="dot b"></span>③ 右臂手眼（眼在手外 AX=YB）</h4>
+        <p>头固定当裁判，夹爪 tag 随臂动；相机位与 tag 安装位双未知联解（Shah + LM 精修）。
+          在目标工作空间（桌面 z≈0.70–0.85m）采样——在哪儿干活，就在哪儿标定。</p>
+        <div class="foot">22 样本 RMS ~6mm → tag 安装位姿 + 臂底座修正 C 写入 URDF</div>
+      </div>
+      <div class="gcard">
+        <h4><span class="dot a"></span>④ 补偿与视觉闭环</h4>
+        <p>常值补偿 (+7.5, +0.1, +3.7)mm 持久化于配置文件（含有效范围）；视觉闭环同帧相对测量，
+          手眼 / FK 系统误差自然抵消，切平面只修 1–2 轮。</p>
+        <div class="foot">开环切平面 1.1–5.8mm → 闭环 2–6mm（目标 ≤1cm 达成）</div>
+      </div>
+    </div>
+    <div class="band"><b>验证方法 · CALIB 残差法（自建）：</b>视觉链与 FK 链对同一物理点独立解算取差，
+      把标定误差从规划 / 执行 / 检测误差中分离——同点重复 ≤1.5mm 证明误差是系统性、可补偿的；
+      误差分解：标定链 3D 均值 8.6mm · 执行环节 dz −21mm（重力下垂）· 相机噪声底 0.3mm。
+      残差反查关节零偏：<b>wrist_flex 零位偏 +9.19°</b>（拟合代入后 RMS 6.2→3.5mm）——标定顺手当了回体检。</div>
+    <div class="judge"><b>决策与权衡：</b>
+      <ul>
+        <li><b>低 RMSE ≠ 对</b>：12-tag 时 RMSE 小但板轴方向错（平面 PnP 歧义），必须 16 tag 全可见才采信；</li>
+        <li><b>模型选错，数据再好也没用</b>：旧版误用「固定板」模型解 tag-on-gripper 数据，得出虚假 102mm 误差；</li>
+        <li><b>达标即止</b>：零偏 9.19° 诊断后未写回——末端指标已达 ≤1cm，精修路径论证存档，不无限追物理真值；</li>
+        <li><b>修正只打臂底座 C，绝不动头相机外参</b>：保住视觉链的独立真值锚点。</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- 2.2 传统抓取 -->
+  <div class="subblk">
+    <h3><span class="n">2.2</span>传统方案：分割 + 抓取网络</h3>
+    <p class="sub">确定性归传统：可解释、可复现、可回归，每一步都有明确的成功判据与错误码。</p>
+    <div class="band"><b>管线：</b>指定物体 → VLM + SAM2 分割掩码 → GPD / PointNetGPD 抓取位姿候选
+      （~1s @ D455 场景，GPU HTTP 服务）→ 姿态约束排序（顶抓 / 侧抓）→ MoveIt 规划 → 本地校验执行。</div>
+    <div class="grid3" style="margin-top:16px">
+      <div class="gcard">
+        <h4><span class="dot b"></span>分割质量决定候选质量</h4>
+        <p>VLM bbox 粗框 + SAM2 精确掩码（多种 mask 模式实测对比），把目标点云从桌面场景中干净分离，
+          是抓取网络出好候选的前提。</p>
+      </div>
+      <div class="gcard">
+        <h4><span class="dot b"></span>抓取网络双后端实践</h4>
+        <p>GPD（atenpas/gpd C++）采样候选 + PointNetGPD 三分类模型重评分，两个后端同场景对比实测，
+          按成功率与时延取舍。</p>
+      </div>
+      <div class="gcard">
+        <h4><span class="dot b"></span>失败可解释</h4>
+        <p>检测、分割、候选、规划、执行每步独立判定——空抓、桌沿误检等失败能定位到具体环节并回归，
+          不依赖"再试一次看看"。</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- 2.3 两阶段 ACT -->
+  <div class="subblk">
+    <h3><span class="n">2.3</span>两阶段 ACT：确定性粗接近 + 学习闭环精抓</h3>
+    <p class="sub">ACT 不学挥臂搜索（交给传统层），只学接触丰富的最后 5–15cm——示教范围故意做窄，数据效率与成功率双高。</p>
+    <div class="split">
+      <div class="half trad">
+        <h4>阶段一：MoveIt pregrasp 粗接近</h4>
+        <div class="why">确定性、安全限位、可回归</div>
+        <ul>
+          <li>IK 种子序列 → MoveIt 规划 → 本地碰撞 / 可达校验</li>
+          <li>单点 4s 轨迹执行，实测关节到位才放行</li>
+          <li>把臂安全合法地送到「门口」，不为此录几十条示教</li>
+        </ul>
+      </div>
+      <div class="half learn">
+        <h4>阶段二：ACT 闭环精抓</h4>
+        <div class="why">桌面接触、物体滑移、位姿微调——解析建模性价比最低的部分</div>
+        <ul>
+          <li>ACT（ResNet18，chunk 100）从实测 pregrasp 上下文启动</li>
+          <li>推理起点与训练采集分布严格对齐，避免分布外初始状态</li>
+          <li>action chunk 经本地 Streaming Executor 执行（0.5s 看门狗）</li>
+          <li>VerifyGrasp 腕部复核 + 夹爪信号双判定，失败自动重抓</li>
+        </ul>
+      </div>
+    </div>
+    <div class="band" style="margin-top:18px"><b>数据闭环：</b>30Hz 双相机采集（.incomplete 校验后原子发布）
+      → rsync 断点续传 → GPU 重校验转 LeRobot → 训练（ResNet18 · chunk 100 · batch 8 · 5000 steps，可断点恢复）
+      → 强制校验六维 state/action 后版本化导出 → 资产目录激活部署，可回滚。
+      关键工程细节：用 <code>predict_action_chunk</code> 每请求取完整 action chunk——
+      <code>select_action</code> 的内部队列会吞掉随后 99 步的新观测，直接破坏闭环。</div>
+    <div class="params">
+      <span class="tag">30 fps</span><span class="tag">2× 640×480 mp4v</span>
+      <span class="tag amber">action[t] = follower_state[t+1]</span><span class="tag">丢弃末帧</span>
+      <span class="tag">Leader 仅遥操对齐，不入训练</span><span class="tag blue">LeRobot 0.5.x</span>
+      <span class="tag blue">ResNet18</span><span class="tag blue">chunk 100</span><span class="tag blue">batch 8</span>
+    </div>
+    <div class="vidrow">
+      <a class="vcard" href="https://www.bilibili.com/video/BV18RK66JEdP" target="_blank" rel="noopener">
+        <div class="vthumb"><img src="assets/video-3.jpg" alt="两阶段 ACT 抓取泛化表现封面"><div class="vplay"><span>▶</span></div><span class="vbili">B 站 · BV18RK66JEdP</span></div>
+        <div class="vcap"><b>两阶段 ACT 抓取泛化表现</b><span>未见过的物体位置 / 姿态下的泛化抓取实录</span></div>
+      </a>
+      <div class="story"><b>真机故事 · VerifyGrasp：</b>交付调试中发现两类抓取失败——夹爪闭合但空抓、桌沿误检。
+        原设计约定「唯一 VLM 调用点」，但真机数据不支持教条。我加了一个最小验证环：腕部相机 VLM 复核 +
+        夹爪闭合位置双信号联合判定，失败自动重抓一次。<b>用实证修正预先设计，是我在系统工程中最看重的能力。</b></div>
+    </div>
+  </div>
+</div></section>
+
+<!-- ============ 支柱二：移动基础 ============ -->
+<section id="mobility"><div class="wrap reveal">
+  <div class="pillar">PILLAR 02 · 走得准 · 到得了</div>
+  <h2><span class="idx">03</span>移动基础：建图与导航</h2>
+  <p class="lead">为抓取和送达提供可信的移动基础——<b>标定先行、异常可防、目标业务化、脱困有退路</b>。</p>
+  <div class="grid4">
+    <div class="gcard">
+      <h4><span class="dot b"></span>里程计物理标定（根因治理）</h4>
+      <ul>
+        <li>1m 直线标轮半径、360° 原地旋转标轮距（验收 5–10%）</li>
+        <li>固定「传感器 → TF → 里程计 → SLAM」排查顺序 + 症状速查表，不盲调 SLAM 参数</li>
+        <li>雷达本体遮挡 mask 校准，屏蔽给 inf 而非假障碍</li>
+      </ul>
+      <div class="foot">根因故事：轮距配置 0.25m vs 实际 0.49m → yaw 积分错 2 倍 → 转弯重影的真凶</div>
+    </div>
+    <div class="gcard">
+      <h4><span class="dot a"></span>slam_mapping_guard 异常防护（自研）</h4>
+      <p>guard 把 scan 投影到当前地图做穿墙检测，三级输出而非简单阈值熔断：
+        SUSPECT 只提示不锁车；CRITICAL（多束激光连续穿可信墙体）停发 scan + 暂停建图 + 软锁底盘，
+        阻止错误 free space 写进 pose graph。恢复走状态机：UNLOCK → 定位确认 → RESUME。</p>
+      <div class="foot">架构：lidar → /scan_raw → guard → /scan → SLAM</div>
+    </div>
+    <div class="gcard">
+      <h4><span class="dot b"></span>导航到桌面业务链</h4>
+      <ul>
+        <li>桌位 / 送达点标注为命名地点，业务语义直接生成导航目标</li>
+        <li>三阶段对接：Nav2 到桌旁 → Spin 收敛朝向 → 自研精确 dock 贴桌（含横向误差校正）</li>
+        <li>定位质量门控：AMCL 协方差 + scan-map 一致性双条件，不达标自动重定位——坏定位不进任务</li>
+      </ul>
+      <div class="foot">NavigateToNamedPlace / AutoLocalize</div>
+    </div>
+    <div class="gcard">
+      <h4><span class="dot b"></span>脱困与恢复</h4>
+      <ul>
+        <li>卡住检测（15s 位移 &lt; 0.1m）→ 恢复行为编排：清 costmap / 原地转 / 倒退，最多 6 轮</li>
+        <li>差异化 inflation_radius：解决「门被膨胀堵死」</li>
+        <li>RotationShim + RPP 替换 MPPI：解决 CPU 卡顿导致的控制循环 miss</li>
+      </ul>
+      <div class="foot">全部结论来自真机现象定位，非参数盲调</div>
+    </div>
+  </div>
+  <div class="judge"><b>决策与权衡 · 为什么不自动回滚地图：</b>快照 / 自动回滚只立架构策略、不在当前版本实施——
+    自动回滚必须等定位 gate 足够可靠后再接入，否则可能把错误 pose graph 回滚成另一个不可解释状态。
+    异常处理的价值不在于「出事后自动动作」，而在于让每一步都可人工确认、可解释。</div>
+</div></section>
+
+<!-- ============ 支柱三：跑得稳 ============ -->
+<section id="system"><div class="wrap reveal">
+  <div class="pillar">PILLAR 03 · 跑得稳</div>
+  <h2><span class="idx">04</span>系统集成与交付工程</h2>
+  <p class="lead">20 个 ROS 2 包、39 个接口契约、八阶段状态机编排——<b>按交付验收标准倒推</b>的系统工程，
+    而不是能跑就行的拼接。</p>
+
+  <div class="subblk" style="margin-top:10px">
+    <h3><span class="n">4.1</span>主链路：召唤取物送达八阶段</h3>
+    <p class="sub">每阶段都是独立 action 接口，具备取消传播、分阶段超时与结构化错误（任务阶段 + 能力错误码 + 可读说明）。</p>
+    <div class="pipe">
+      <div class="stage"><h4>多入口任务接收</h4><p>语音（KWS→Whisper→Qwen 意图）/ 网页 / CLI 三入口归一到同一任务编排。</p><div class="io">ExecuteTask.action</div></div>
+      <div class="stage"><h4>定位质量门控</h4><p>AMCL 协方差 + scan-map 一致性双条件，不达标自动撒粒子并重定位收敛。</p><div class="io">AutoLocalize.action</div></div>
+      <div class="stage"><h4>三阶段导航</h4><p>Nav2 position-only 到桌旁 → Spin 收敛朝向 → 自研精确 dock 贴桌，含横向误差校正。</p><div class="io">NavigateToNamedPlace.action</div></div>
+      <div class="stage"><h4>目标检测定位</h4><p>VLM bbox（唯一语义入口）→ 中心窗口深度中值 → 针孔投影 → TF 链定位到 map。</p><div class="io">DetectObject.action</div></div>
+      <div class="stage"><h4>成熟 pregrasp</h4><p>IK 种子序列 → MoveIt 规划 → 本地校验 → 单点 4s 轨迹 → 实测关节到位才放行。</p><div class="io">PrepareGrasp.action</div></div>
+      <div class="stage"><h4>策略闭环抓取</h4><p>实测上下文启动 ACT streaming；VerifyGrasp 腕部复核 + 夹爪信号双判定，失败自动重抓。</p><div class="io">ExecuteLearnedPolicy.action</div></div>
+      <div class="stage"><h4>寻人与接近</h4><p>后退 → 机身 Spin → 蛇形头扫，YOLO 逐视角检测；standoff 候选点 + 路径校验接近。</p><div class="io">ScanForPerson / ApproachTarget</div></div>
+      <div class="stage"><h4>递送与反馈</h4><p>持物门 → 递送位 → 松爪 → 回 ready；预录 MP3 语音反馈 + 结构化任务事件上报。</p><div class="io">HandoverObject / SpeakText</div></div>
+    </div>
+  </div>
+
+  <div class="subblk">
+    <h3><span class="n">4.2</span>HMI：一屏掌控全链路</h3>
+    <p class="sub">从语音下发任务到递送完成，操作员全程可见、可控、不越权。</p>
+    <div class="vidrow">
+      <a class="vcard" href="https://www.bilibili.com/video/BV1GSK66XEqf" target="_blank" rel="noopener">
+        <div class="vthumb"><img src="assets/video-2.jpg" alt="主 DEMO 人机交互界面录屏封面"><div class="vplay"><span>▶</span></div><span class="vbili">B 站 · BV1GSK66XEqf</span></div>
+        <div class="vcap"><b>主 DEMO 人机交互界面（完整录屏）</b><span>从语音下发任务到递送完成，HMI 全程实录</span></div>
+      </a>
+      <div class="gcard">
+        <h4><span class="dot b"></span>一屏掌控，但不越权</h4>
+        <ul>
+          <li>地图与机器人位置实时跟踪</li>
+          <li>头部 + 腕部双路相机 live</li>
+          <li>任务进度分阶段反馈，语音识别结果上屏</li>
+          <li>任务执行时手动命令自动锁定</li>
+        </ul>
+        <div class="foot">操作员既能看清，又插不了手</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="subblk">
+    <h3><span class="n">4.3</span>交付工程化：以验收标准倒推设计</h3>
+    <p class="sub">离线安装、原子升级、可回滚、可卸载、可远程诊断。</p>
+    <div class="deliv">
+      <div class="card"><b class="t">离线 Release + 升级回滚</b><p>SHA-256 manifest 校验；.staging 解包 + current 原子切换；重复安装幂等；升级后 doctor 门禁，失败自动回退；客户机零构建。</p><code>xlerobotctl install-release / rollback</code></div>
+      <div class="card"><b class="t">双模式卸载</b><p>--keep-assets 保留配置 / 资产 / 日志；--purge 对服务、规则、用户、目录逐项确认无残留。</p><code>uninstall.sh --keep-assets | --purge</code></div>
+      <div class="card"><b class="t">诊断与日志纪律</b><p>doctor 结构化体检；support-bundle 脱敏打包支撑远程定位；持久日志统一 /var/log/xlerobot + logrotate；任务级 JSONL trace 带唯一 task_run_id。</p><code>xlerobotctl doctor / support-bundle</code></div>
+      <div class="card"><b class="t">四 Profile 互斥</b><p>demo / mapping / calibration / collection 固定 launch 组合，systemd Conflicts + flock 双重互斥，同一时刻只有一个 profile 持有硬件。</p><code>xlerobotctl start demo</code></div>
+    </div>
+  </div>
+
+  <div class="subblk">
+    <h3><span class="n">4.4</span>工程方法：我怎么工作</h3>
+    <div class="method" style="margin-top:14px">
+      <div class="card"><h3>真机优先</h3><p>所有设计决策以真机回归为准。git 历史是一条「现象 → 定位 → 修复 → 回归」的实证链：空抓、Spin 后横向偏差、导航确认竞态，都是在真机前发现并修复的。</p></div>
+      <div class="card"><h3>契约与测试</h3><p>接口先行（39 个 action / srv / msg 契约，零死定义），契约测试锁定已验证行为，验收标准可机器检查。</p></div>
+      <div class="card"><h3>AI 协作工程化</h3><p>逐行实现大量借助 AI；我负责需求分解、架构决策、代码评审与真机验证。AI 产出的每一行都要过评审与回归——这是我对 AI 时代工程师工作方式的践行。</p></div>
+      <div class="card"><h3>评审文化</h3><p>交付前完成四领域并行审查 + 关键结论独立复核，输出带 path:line 证据链的审查报告，并按 P0/P1 跟踪修复。</p></div>
+    </div>
+  </div>
+</div></section>
+
+<!-- ============ 演进 ============ -->
+<section id="evolution"><div class="wrap reveal">
+  <h2><span class="idx">05</span>背景与演进：一条证据链</h2>
+  <p class="sub">视觉引导抓取的根、电信级的工程化训练、机器人全栈的实战——同一条能力线，三种形态。</p>
+  <div class="timeline">
+    <div class="tl-item">
+      <div class="when">2013 – 2020</div>
+      <h4>西安交通大学 · 机械工程本硕</h4>
+      <p>硕士课题：结构光投影 3D 视觉系统搭建、基于点云的物体位姿估计与 bin-picking 抓取研究。
+        今天的视觉引导抓取与标定工作，正是硕士研究方向的工程延续。</p>
+    </div>
+    <div class="tl-item">
+      <div class="when">2020 – 2026</div>
+      <h4>电信级系统软件 <span class="mono">中兴通讯 · 5G 核心网</span></h4>
+      <p>4G/5G 基站应用软件、5G 核心网信令面开发（AMF / SMF / PCF / UDM）：分布式高可用、主备秒级切换、
+        状态机驱动架构。看门狗、所有权、取消传播的机器人运行时安全设计，与电信级容错一脉相承。</p>
+    </div>
+    <div class="tl-item">
+      <div class="when">2026.05 – 2026.06</div>
+      <h4>实验原型 <span class="mono">xlerobot_home_service</span></h4>
+      <p>一个多月的真机密集迭代：从舵机通讯、底盘驱动到全链路打通，首次跑通召唤取物送达主 demo。
+        收获不只是代码，而是对问题空间的理解——以及一个教训：<b>能跑 ≠ 能交付</b>。</p>
+    </div>
+    <div class="tl-item">
+      <div class="when">2026.06 – 2026.07</div>
+      <h4>交付工程化 <span class="mono">xlerobot_home_service_delivery</span></h4>
+      <p>以交付验收标准倒推设计与测试：四 profile 隔离、release 生命周期、标定工具链、ACT 数据闭环、
+        诊断与支持体系。验收标准覆盖命令 / 语音入口连续成功、重启状态恢复、两种卸载无残留。
+        <b>源码私有，本页展示其全部技术细节。</b></p>
+    </div>
+    <div class="tl-item">
+      <div class="when">进行中</div>
+      <h4>教学开源 <span class="mono">xlerobot_home_service_lab</span></h4>
+      <p>把验证过的产品实现沉淀为教学 / 参考栈：更细的模块边界、mock 层、课程化文档，计划开源。
+        让后来者可以一个能力一个能力地学习，再组合成完整 demo。</p>
+    </div>
+  </div>
+</div></section>
+
+<!-- ============ 联系 ============ -->
+<section id="contact"><div class="wrap reveal">
+  <h2><span class="idx">06</span>联系我</h2>
+  <p class="sub">对机器人系统 / ROS 2 或具身智能应用方向的机会感兴趣，欢迎交流。</p>
+  <div class="contact-box">
+    <p>可以聊：ROS 2 系统架构 · 具身智能数据闭环 · 标定与视觉引导抓取 · 机器人产品化交付</p>
+    <div class="links">
+      <a class="btn pri" href="mailto:xujiayuxian@163.com">xujiayuxian@163.com</a>
+      <span class="btn ghost">微信：xujiayuxian</span>
+      <span class="btn ghost">GitHub：开源后启用</span>
+    </div>
+  </div>
+</div></section>
+
+<footer><div class="wrap">
+  © 2026 徐佳宇 · 本页展示技术细节与成果；源码随教学版开源前暂不公开 · 单文件静态页，无外部依赖
+</div></footer>
+
+<script>
+const io = new IntersectionObserver((entries) => {
+  for (const e of entries) if (e.isIntersecting) { e.target.classList.add('on'); io.unobserve(e.target); }
+}, { threshold: 0.08 });
+document.querySelectorAll('.reveal').forEach((el) => io.observe(el));
+</script>
+</body>
+</html>
