@@ -623,7 +623,11 @@ footer{border-top:1px solid var(--border);margin-top:80px;padding:28px 0 40px;co
 
 <footer><div class="wrap">
   <span>© 2026 徐佳宇 · 本页展示技术细节与成果；源码随教学版开源前暂不公开</span>
-  <img class="counter" src="https://komarev.com/ghpvc/?username=xujiayuxian-xlerobot&color=0d9488&label=visits" alt="访问计数">
+  <img class="counter" id="visit-badge" alt="访问计数">
+  <script>
+    document.getElementById('visit-badge').src =
+      'https://komarev.com/ghpvc/?username=xujiayuxian-xlerobot&color=0d9488&label=visits&t=' + Date.now();
+  </script>
 </div></footer>
 
 <script>
