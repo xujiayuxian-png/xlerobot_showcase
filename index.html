@@ -195,7 +195,9 @@ header.hero{padding:140px 0 60px;background:
 .contact-box p{color:var(--muted)}
 .contact-box .links{display:flex;gap:14px;justify-content:center;flex-wrap:wrap;margin-top:18px}
 footer .wrap{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap}
-footer .counter{height:20px;width:auto;display:block}
+footer .counter{display:inline-flex;align-items:center;font-size:11px;font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;border-radius:4px;overflow:hidden;background:#555;color:#fff;line-height:1}
+footer .counter-label{padding:3px 7px;background:#555;color:#fff}
+footer .counter-value{padding:3px 7px;background:#0d9488;color:#fff;min-width:2em;text-align:center}
 footer{border-top:1px solid var(--border);margin-top:80px;padding:28px 0 40px;color:var(--dim);font-size:.8rem}
 </style>
 </head>
@@ -623,12 +625,24 @@ footer{border-top:1px solid var(--border);margin-top:80px;padding:28px 0 40px;co
 
 <footer><div class="wrap">
   <span>© 2026 徐佳宇 · 本页展示技术细节与成果；源码随教学版开源前暂不公开</span>
-  <img class="counter" id="visit-badge" alt="访问计数">
-  <script>
-    document.getElementById('visit-badge').src =
-      'https://komarev.com/ghpvc/?username=xujiayuxian-xlerobot&color=0d9488&label=visits&t=' + Date.now();
-  </script>
+  <span class="counter" id="visit-badge" aria-live="polite">
+    <span class="counter-label">visits</span>
+    <span class="counter-value">-</span>
+  </span>
 </div></footer>
+
+<script>
+(function(){
+  const badge = document.getElementById('visit-badge');
+  fetch('https://xujiayuxian.goatcounter.com/counter//.json')
+    .then(r => r.json())
+    .then(d => {
+      const val = badge.querySelector('.counter-value');
+      if (val) val.textContent = d.count.replace(/,/g, '');
+    })
+    .catch(() => { if (badge) badge.style.display = 'none'; });
+})();
+</script>
 
 <script>
 const io = new IntersectionObserver((entries) => {
