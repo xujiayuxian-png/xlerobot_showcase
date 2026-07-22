@@ -629,5 +629,16 @@ const io = new IntersectionObserver((entries) => {
 }, { threshold: 0.08 });
 document.querySelectorAll('.reveal').forEach((el) => io.observe(el));
 </script>
+<script>
+if(!sessionStorage.getItem("_swa") && document.referrer.indexOf(location.protocol + "//" + location.host) !== 0){
+  fetch("https://counter.dev/track?" + new URLSearchParams({
+    referrer: document.referrer,
+    screen: screen.width + "x" + screen.height,
+    user: "xujiayuxian",
+    utcoffset: "8"
+  }));
+}
+sessionStorage.setItem("_swa", "1");
+</script>
 </body>
 </html>
